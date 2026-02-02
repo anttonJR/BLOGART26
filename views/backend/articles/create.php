@@ -35,6 +35,33 @@ $thematiques = selectAll('THEMATIQUE', 'numThem');
     </small>
 </div>
 
+<?php
+// Charger tous les mots-clés
+$motscles = selectAll('MOTCLE', 'numMotCle');
+?>
+
+<!-- Mots-clés -->
+<div class="mb-3">
+    <label class="form-label">Mots-clés (sélectionnez au moins 3) *</label>
+    <div class="border p-3" style="max-height: 300px; overflow-y: auto;">
+        <?php foreach ($motscles as $mc): ?>
+            <div class="form-check">
+                <input type="checkbox" 
+                       name="motscles[]" 
+                       value="<?= $mc['numMotCle'] ?>" 
+                       class="form-check-input" 
+                       id="mc_<?= $mc['numMotCle'] ?>">
+                <label class="form-check-label" for="mc_<?= $mc['numMotCle'] ?>">
+                    <?= htmlspecialchars($mc['libMotCle']) ?>
+                </label>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <small class="form-text text-muted">
+        Minimum 3 mots-clés requis
+    </small>
+</div>
+
 <!DOCTYPE html>
 <html>
 <head>

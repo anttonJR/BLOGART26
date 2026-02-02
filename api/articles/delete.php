@@ -57,4 +57,31 @@ try {
 
 header('Location: ../../views/backend/articles/list.php');
 exit;
+
+try {
+    $pdo = getConnection();
+    
+    // 1. Supprimer l'image du serveur
+    if ($art['urlPhotArt']) {
+        deleteImage($art['urlPhotArt']);
+    }
+    
+    // 2. Supprimer les associations mots-clés (respect des CIR)
+    $stmtMotCle = $pdo->prepare(
+        "DELETE FROM MOTCLEARTICLE WHERE numArt = ?"
+    );
+    $stmtMotCle->execute([$numArt]);
+    
+    // 3. Supprimer l'article
+    $result = delete('ARTICLE', 'numArt', $numArt);
+    
+    if ($result) {
+        $_SESSION['success'] = "Article et ses associations supprimés";
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = "Erreur : " . $e->getMessage();
+}
+
+header('Location: ../../views/backend/articles/list.php');
+exit;
 ?>

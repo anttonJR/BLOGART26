@@ -21,33 +21,7 @@ $data = [
     'numThem' => $numThem  // Au lieu de null
 ];
 
-require_once '../../functions/upload.php';
 
-// ... après la validation des autres champs ...
-
-// Gérer l'upload de l'image
-$urlPhotArt = null;
-if (isset($_FILES['imageArt']) && $_FILES['imageArt']['error'] !== UPLOAD_ERR_NO_FILE) {
-    $uploadResult = uploadImage($_FILES['imageArt']);
-    
-    if ($uploadResult['success']) {
-        $urlPhotArt = $uploadResult['filename'];
-    } else {
-        $errors[] = $uploadResult['error'];
-    }
-}
-
-if (!empty($errors)) {
-    $_SESSION['errors'] = $errors;
-    header('Location: ../../views/backend/articles/create.php');
-    exit;
-}
-
-// Modifier le tableau $data
-$data = [
-    // ... autres champs ...
-    'urlPhotArt' => $urlPhotArt  // Au lieu de null
-];
 // Récupération des données
 $numArt = $_POST['numArt'] ?? null;
 $libTltArt = trim($_POST['libTltArt'] ?? '');
@@ -118,4 +92,70 @@ try { // gere les erreurs de la BDD
 
 header('Location: ../../views/backend/articles/list.php'); //Peu importe succès ou erreur, tu reviens à la liste des articles.
 exit;
+
+require_once '../../functions/upload.php';
+
+// ... après la validation des autres champs ...
+
+// Gérer l'upload de l'image
+$urlPhotArt = null;
+if (isset($_FILES['imageArt']) && $_FILES['imageArt']['error'] !== UPLOAD_ERR_NO_FILE) {
+    $uploadResult = uploadImage($_FILES['imageArt']);
+    
+    if ($uploadResult['success']) {
+        $urlPhotArt = $uploadResult['filename'];
+    } else {
+        $errors[] = $uploadResult['error'];
+    }
+}
+
+if (!empty($errors)) {
+    $_SESSION['errors'] = $errors;
+    header('Location: ../../views/backend/articles/create.php');
+    exit;
+}
+
+// Modifier le tableau $data
+$data = [
+    // ... autres champs ...
+    'urlPhotArt' => $urlPhotArt  // Au lieu de null
+];
+// Après la récupération des autres champs
+$motscles = $_POST['motscles'] ?? [];
+
+// Validation des mots-clés
+if (count($motscles) < 3) {
+    $errors[] = "Vous devez sélectionner au moins 3 mots-clés";
+}
+
+if (!empty($errors)) {
+    $_SESSION['errors'] = $errors;
+    header('Location: ../../views/backend/articles/create.php');
+    exit;
+}
+
+// === APRÈS L'INSERTION DE L'ARTICLE ===
+try {
+    $result = insert('ARTICLE', $data);
+    
+    if ($result) {
+        // Insertion des associations article-motcle
+        $pdo = getConnection();
+        $stmt = $pdo->prepare(
+            "INSERT INTO MOTCLEARTICLE (numArt, numMotCle) VALUES (?, ?)"
+        );
+        
+        foreach ($motscles as $numMotCle) {
+            $stmt->execute([$numArt, $numMotCle]);
+        }
+        
+        $_SESSION['success'] = "Article créé avec " . count($motscles) . " mots-clés";
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = "Erreur : " . $e->getMessage();
+}
+
+header('Location: ../../views/backend/articles/list.php');
+exit;
+
 ?>

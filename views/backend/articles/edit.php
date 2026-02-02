@@ -31,6 +31,35 @@ $thematiques = selectAll('THEMATIQUE', 'numThem');
         <?php endforeach; ?>
     </select>
 </div>
+
+<form method="POST" action="../../api/articles/update.php" enctype="multipart/form-data">
+
+<!-- Ajouter l'affichage de l'image actuelle et le champ d'upload -->
+<div class="mb-3">
+    <label class="form-label">Image de l'article</label>
+    
+    <?php if ($art['urlPhotArt']): ?>
+        <div class="mb-2">
+            <p>Image actuelle :</p>
+            <img src="../../../src/uploads/<?= htmlspecialchars($art['urlPhotArt']) ?>" 
+                 alt="Image article" 
+                 class="img-thumbnail" 
+                 style="max-width: 300px;">
+        </div>
+    <?php endif; ?>
+    
+    <input type="file" 
+           name="imageArt" 
+           class="form-control" 
+           accept="image/jpeg,image/png,image/gif">
+    <small class="form-text text-muted">
+        Formats acceptés : JPG, PNG, GIF - Taille max : 5 Mo<br>
+        <?php if ($art['urlPhotArt']): ?>
+            Laisser vide pour conserver l'image actuelle.
+        <?php endif; ?>
+    </small>
+</div>
+
 <!DOCTYPE html>
 <html>
 <head>

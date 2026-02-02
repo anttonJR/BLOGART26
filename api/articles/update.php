@@ -118,4 +118,51 @@ try {
 
 header('Location: ../../views/backend/articles/list.php');
 exit;
+
+require_once '../../functions/motcle.php';
+
+// Après la récupération des autres champs
+$motscles = $_POST['motscles'] ?? [];
+
+// Validation
+if (count($motscles) < 3) {
+    $errors[] = "Vous devez sélectionner au moins 3 mots-clés";
+}
+
+if (!empty($errors)) {
+    $_SESSION['errors'] = $errors;
+    header('Location: ../../views/backend/articles/edit.php?id=' . $numArt);
+    exit;
+}
+
+// === APRÈS LA MISE À JOUR DE L'ARTICLE ===
+try {
+    $result = update('ARTICLE', $data, 'numArt', $numArt);
+    
+    if ($result) {
+        $pdo = getConnection();
+        
+        // 1. Supprimer TOUTES les anciennes associations
+        $stmtDelete = $pdo->prepare(
+            "DELETE FROM MOTCLEARTICLE WHERE numArt = ?"
+        );
+        $stmtDelete->execute([$numArt]);
+        
+        // 2. Insérer les nouvelles associations
+        $stmtInsert = $pdo->prepare(
+            "INSERT INTO MOTCLEARTICLE (numArt, numMotCle) VALUES (?, ?)"
+        );
+        
+        foreach ($motscles as $numMotCle) {
+            $stmtInsert->execute([$numArt, $numMotCle]);
+        }
+        
+        $_SESSION['success'] = "Article mis à jour avec " . count($motscles) . " mots-clés";
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = "Erreur : " . $e->getMessage();
+}
+
+header('Location: ../../views/backend/articles/list.php');
+exit;
 ?>

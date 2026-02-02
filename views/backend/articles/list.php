@@ -65,3 +65,39 @@ $articles = $stmt->fetchAll();
     </div>
 </body>
 </html>
+
+<?php
+require_once '../../functions/motcle.php';
+?>
+
+<!-- Dans le tableau, ajouter une colonne -->
+<thead>
+    <tr>
+        <th>N°</th>
+        <th>Titre</th>
+        <th>Thématique</th>
+        <th>Mots-clés</th>
+        <th>Date création</th>
+        <th>Actions</th>
+    </tr>
+</thead>
+<tbody>
+    <?php foreach ($articles as $art): ?>
+        <?php $motscles = getMotsClesArticle($art['numArt']); ?>
+        <tr>
+            <td><?= $art['numArt'] ?></td>
+            <td><?= htmlspecialchars($art['libTltArt']) ?></td>
+            <td><?= htmlspecialchars($art['libThem'] ?? 'Aucune') ?></td>
+            <td>
+                <?php foreach ($motscles as $mc): ?>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($mc['libMotCle']) ?></span>
+                <?php endforeach; ?>
+            </td>
+            <td><?= date('d/m/Y', strtotime($art['dtCreaArt'])) ?></td>
+            <td>
+                <a href="edit.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-warning">Modifier</a>
+                <a href="delete.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-danger">Supprimer</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>

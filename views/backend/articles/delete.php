@@ -66,3 +66,32 @@ $art = $stmt->fetch();
     </div>
 </body>
 </html>
+<?php
+require_once '../../functions/motcle.php';
+
+// Récupérer les mots-clés de l'article
+$motscles = getMotsClesArticle($numArt);
+?>
+
+<!-- Ajouter dans la carte d'affichage -->
+<dl class="row">
+    <dt class="col-sm-3">Numéro :</dt>
+    <dd class="col-sm-9"><?= $art['numArt'] ?></dd>
+    
+    <dt class="col-sm-3">Thématique :</dt>
+    <dd class="col-sm-9"><?= htmlspecialchars($art['libThem'] ?? 'Aucune') ?></dd>
+    
+    <dt class="col-sm-3">Mots-clés :</dt>
+    <dd class="col-sm-9">
+        <?php if (empty($motscles)): ?>
+            <em class="text-muted">Aucun</em>
+        <?php else: ?>
+            <?php foreach ($motscles as $mc): ?>
+                <span class="badge bg-secondary"><?= htmlspecialchars($mc['libMotCle']) ?></span>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </dd>
+    
+    <dt class="col-sm-3">Date création :</dt>
+    <dd class="col-sm-9"><?= date('d/m/Y H:i', strtotime($art['dtCreaArt'])) ?></dd>
+</dl>
