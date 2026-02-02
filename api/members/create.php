@@ -1,5 +1,12 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
+
+$token = $_POST['csrf_token'] ?? '';
+if (!verifyCSRFToken($token)) {
+    die('Token CSRF invalide');
+}
+
 require_once '../../functions/query/insert.php';
 require_once '../../functions/query/select.php';
 

@@ -1,5 +1,12 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
+
+$token = $_POST['csrf_token'] ?? '';
+if (!verifyCSRFToken($token)) {
+    die('Token CSRF invalide');
+}
+
 require_once '../../functions/query/insert.php'; //active la session PHP → permet d’utiliser $_SESSION (pour stocker erreurs, succès, etc.).
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

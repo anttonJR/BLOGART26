@@ -1,6 +1,12 @@
 <?php
 // 1. Démarrer la session pour les messages
 session_start();
+require_once '../../functions/csrf.php';
+
+$token = $_POST['csrf_token'] ?? '';
+if (!verifyCSRFToken($token)) {
+    die('Token CSRF invalide');
+}
 
 // 2. Inclure les fonctions nécessaires
 require_once '../../functions/query/update.php';

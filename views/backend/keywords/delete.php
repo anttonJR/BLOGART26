@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 require_once '../../functions/query/select.php';
 
 // Récupération de l'identifiant du mot-clé
@@ -34,6 +35,7 @@ if (!$motCle) {
     </dl>
     
     <form method="POST" action="../../api/mot-cles/delete.php">
+        <?php csrfField(); ?>
         <input type="hidden" name="numMotCle" value="<?= $motCle['numMotCle'] ?>">
         
         <button type="submit">Confirmer la suppression</button>

@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 include 'includes/cookie-consent.php'; 
 ?>
 <!DOCTYPE html>
@@ -29,6 +30,7 @@ include 'includes/cookie-consent.php';
                 <?php endif; ?>
                 
                 <form method="POST" action="../../api/security/login.php">
+                    <?php csrfField(); ?>
                     <!-- Pseudo -->
                     <div class="mb-3">
                         <label class="form-label">Pseudo</label>

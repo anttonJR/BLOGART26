@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 require_once '../../functions/query/select.php';
 
 $numArt = $_GET['id'] ?? null;
@@ -58,6 +59,7 @@ $art = $stmt->fetch();
         </div>
         
         <form method="POST" action="../../api/articles/delete.php" class="mt-3">
+            <?php csrfField(); ?>
             <input type="hidden" name="numArt" value="<?= $art['numArt'] ?>">
             
             <button type="submit" class="btn btn-danger">Confirmer la suppression</button>

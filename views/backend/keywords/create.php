@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 ?>
 <!DOCTYPE html>
 <html>
@@ -19,6 +20,7 @@ session_start();
     <?php endif; ?>
     
     <form method="POST" action="../../api/mot-cles/create.php">
+        <?php csrfField(); ?>
         <label>Numéro de Mot-clé :</label>
         <input type="number" name="numMotCle" required>
         

@@ -1,5 +1,12 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
+
+$token = $_POST['csrf_token'] ?? '';
+if (!verifyCSRFToken($token)) {
+    die('Token CSRF invalide');
+}
+
 require_once '../../functions/query/delete.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -77,6 +84,40 @@ try {
     
     if ($result) {
         $_SESSION['success'] = "Article et ses associations supprimés";
+    }
+} catch (Exception $e) {
+    $_SESSION['error'] = "Erreur : " . $e->getMessage();
+}
+
+header('Location: ../../views/backend/articles/list.php');
+exit;
+?>
+<?php
+try {
+    $pdo = getConnection();
+    
+    // 1. Supprimer l'image
+    if ($art['urlPhotArt']) {
+        deleteImage($art['urlPhotArt']);
+    }
+    
+    // 2. Supprimer les associations mots-clés
+    $stmtMotCle = $pdo->prepare("DELETE FROM MOTCLEARTICLE WHERE numArt = ?");
+    $stmtMotCle->execute([$numArt]);
+    
+    // 3. Supprimer les commentaires
+    $stmtComments = $pdo->prepare("DELETE FROM COMMENT WHERE numArt = ?");
+    $stmtComments->execute([$numArt]);
+    
+    // 4. Supprimer les likes
+    $stmtLikes = $pdo->prepare("DELETE FROM LIKEART WHERE numArt = ?");
+    $stmtLikes->execute([$numArt]);
+    
+    // 5. Supprimer l'article
+    $result = delete('ARTICLE', 'numArt', $numArt);
+    
+    if ($result) {
+        $_SESSION['success'] = "Article, commentaires, likes et associations supprimés";
     }
 } catch (Exception $e) {
     $_SESSION['error'] = "Erreur : " . $e->getMessage();

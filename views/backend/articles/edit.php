@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 require_once '../../functions/query/select.php';
 
 $numArt = $_GET['id'] ?? null;
@@ -33,6 +34,7 @@ $thematiques = selectAll('THEMATIQUE', 'numThem');
 </div>
 
 <form method="POST" action="../../api/articles/update.php" enctype="multipart/form-data">
+    <?php csrfField(); ?>
 
 <!-- Ajouter l'affichage de l'image actuelle et le champ d'upload -->
 <div class="mb-3">
@@ -71,6 +73,7 @@ $thematiques = selectAll('THEMATIQUE', 'numThem');
         <h1>Modifier l'article</h1>
         
         <form method="POST" action="../../api/articles/update.php">
+            <?php csrfField(); ?>
             <input type="hidden" name="numArt" value="<?= $art['numArt'] ?>">
             
             <!-- Titre -->

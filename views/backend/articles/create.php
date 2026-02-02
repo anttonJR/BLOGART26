@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
 ?>
 <?php
 // Charger les thématiques
@@ -22,6 +23,7 @@ $thematiques = selectAll('THEMATIQUE', 'numThem');
 
 <!-- IMPORTANT : Ajouter enctype au formulaire -->
 <form method="POST" action="../../api/articles/create.php" enctype="multipart/form-data">
+    <?php csrfField(); ?>
 
 <!-- Ajouter après le champ Thématique -->
 <div class="mb-3">
@@ -83,6 +85,7 @@ $motscles = selectAll('MOTCLE', 'numMotCle');
 
         
         <form method="POST" action="../../api/articles/create.php">
+            <?php csrfField(); ?>
             <!-- Numéro d'article -->
             <div class="mb-3">
                 <label class="form-label">Numéro d'article *</label>

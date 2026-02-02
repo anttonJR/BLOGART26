@@ -2,6 +2,121 @@
 include '../../header.php';
 
 ?>
+<?php
+session_start();
+require_once '../../functions/auth.php';
+require_once '../../functions/query/select.php';
+
+requireAdmin();
+
+// Articles les plus likés
+$sqlTopLiked = "SELECT a.numArt, a.libTltArt, COUNT(l.numMemb) as nb_likes
+                FROM ARTICLE a
+                LEFT JOIN LIKEART l ON a.numArt = l.numArt AND l.likeA = 1
+                GROUP BY a.numArt
+                ORDER BY nb_likes DESC
+                LIMIT 10";
+
+$pdo = getConnection();
+$stmtTopLiked = $pdo->query($sqlTopLiked);
+$topLiked = $stmtTopLiked->fetchAll();
+
+// Statistiques générales
+$sqlStats = "SELECT 
+    (SELECT COUNT(*) FROM ARTICLE) as nb_articles,
+    (SELECT COUNT(*) FROM MEMBRE) as nb_membres,
+    (SELECT COUNT(*) FROM COMMENT WHERE attModOK = 0) as nb_comments_pending,
+    (SELECT COUNT(*) FROM LIKEART WHERE likeA = 1) as nb_likes_total";
+
+$stmtStats = $pdo->query($sqlStats);
+$stats = $stmtStats->fetch();
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - BlogArt</title>
+    <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Dashboard - BlogArt Admin</h1>
+        
+        <!-- Statistiques générales -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="card-title"><?= $stats['nb_articles'] ?></h3>
+                        <p class="card-text">Articles</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="card-title"><?= $stats['nb_membres'] ?></h3>
+                        <p class="card-text">Membres</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-warning text-white">
+                    <div class="card-body">
+                        <h3 class="card-title"><?= $stats['nb_comments_pending'] ?></h3>
+                        <p class="card-text">Commentaires en attente</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-danger text-white">
+                    <div class="card-body">
+                        <h3 class="card-title"><?= $stats['nb_likes_total'] ?></h3>
+                        <p class="card-text">Likes totaux</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top 10 articles les plus likés -->
+        <div class="mt-5">
+            <h3>Top 10 des articles les plus likés</h3>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Position</th>
+                        <th>Titre</th>
+                        <th>Nombre de likes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($topLiked as $index => $art): ?>
+                        <tr>
+                            <td><?= $index + 1 ?></td>
+                            <td><?= htmlspecialchars($art['libTltArt']) ?></td>
+                            <td>
+                                <span class="badge bg-danger">
+                                    ❤️ <?= $art['nb_likes'] ?>
+                                </span>
+                            </td>
+                            <td>
+                                <a href="../articles/edit.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-primary">Modifier</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Navigation -->
+        <div class="mt-5">
+            <a href="../articles/list.php" class="btn btn-primary">Gérer les articles</a>
+            <a href="../moderation/comments.php" class="btn btn-warning">Modérer les commentaires (<?= $stats['nb_comments_pending'] ?>)</a>
+            <a href="../members/list.php" class="btn btn-secondary">Gérer les membres</a>
+        </div>
+    </div>
+</body>
+</html>
 
 <!-- Bootstrap admin dashboard template -->
 <div>

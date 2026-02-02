@@ -1,4 +1,5 @@
 <?php
+require_once '../../functions/csrf.php';
 // 1. Récupérer l'ID du statut depuis l'URL
 $numStat = $_GET['id'] ?? null;
 
@@ -25,6 +26,7 @@ if (!$statut) {
     <h1>Modifier le statut</h1>
     
     <form method="POST" action="../../api/statuts/update.php">
+        <?php csrfField(); ?>
         <!-- Champ caché pour l'ID -->
         <input type="hidden" name="numStat" value="<?= $statut['numStat'] ?>">
         

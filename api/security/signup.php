@@ -1,5 +1,11 @@
 <?php
 session_start();
+require_once '../../functions/csrf.php';
+
+$token = $_POST['csrf_token'] ?? '';
+if (!verifyCSRFToken($token)) {
+    die('Token CSRF invalide');
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -24,6 +30,7 @@ session_start();
                 <?php endif; ?>
                 
                 <form method="POST" action="../../api/members/create.php" id="form-recaptcha">
+                    <?php csrfField(); ?>
                     <!-- Pseudo -->
                     <div class="mb-3">
                         <label class="form-label">Pseudo *</label>

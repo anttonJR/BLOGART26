@@ -8,9 +8,9 @@ if (!verifyCSRFToken($token)) {
 }
 
 require_once '../../functions/auth.php';
-require_once '../../functions/query/delete.php';
+require_once '../../functions/query/update.php';
 
-requireAdmin(); // Seul l'admin peut supprimer physiquement
+requireModerator();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../../views/backend/moderation/comments.php');
@@ -25,10 +25,15 @@ if (!$numCom) {
     exit;
 }
 
+// Suppression logique (archivage)
+$data = [
+    'dtDelLogCom' => date('Y-m-d H:i:s')
+];
+
 try {
-    $result = delete('COMMENT', 'numCom', $numCom);
+    $result = update('COMMENT', $data, 'numCom', $numCom);
     if ($result) {
-        $_SESSION['success'] = "Commentaire supprimé définitivement";
+        $_SESSION['success'] = "Commentaire archivé (suppression logique)";
     }
 } catch (Exception $e) {
     $_SESSION['error'] = "Erreur : " . $e->getMessage();
