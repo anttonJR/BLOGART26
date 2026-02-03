@@ -27,7 +27,7 @@ require_once 'config.php';
           <a class="nav-link active" aria-current="page" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/views/backend/dashboard.php">Admin</a>
+          <a class="nav-link" href="/BLOGART26/views/backend/dashboard.php">Admin</a>
         </li>
       </ul>
     </div>
@@ -36,8 +36,8 @@ require_once 'config.php';
       <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Rechercher sur le site…" aria-label="Search" >
       </form>
-      <a class="btn btn-primary m-1" href="/views/backend/security/login.php" role="button">Login</a>
-      <a class="btn btn-dark m-1" href="/views/backend/security/signup.php" role="button">Sign up</a>
+      <a class="btn btn-primary m-1" href="/BLOGART26/views/frontend/security/login.php" role="button">Login</a>
+      <a class="btn btn-dark m-1" href="/BLOGART26/views/frontend/security/signup.php" role="button">Sign up</a>
     </div>
   </div>
 </nav>

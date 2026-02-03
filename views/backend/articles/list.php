@@ -1,103 +1,114 @@
 <?php
-session_start();
-require_once '../../functions/query/select.php';
+$pageTitle = 'Gestion des articles';
+$breadcrumb = [['label' => 'Articles']];
+require_once dirname(__DIR__) . '/includes/header.php';
+require_once ROOT . '/functions/query/select.php';
+require_once ROOT . '/functions/motcle.php';
 
 // Récupérer tous les articles avec leur thématique
 $sql = "SELECT a.*, t.libThem 
         FROM ARTICLE a 
         LEFT JOIN THEMATIQUE t ON a.numThem = t.numThem 
         ORDER BY a.dtCreaArt DESC";
-$pdo = getConnection();
-$stmt = $pdo->query($sql);
+
+global $DB;
+$stmt = $DB->query($sql);
 $articles = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Gestion des articles</title>
-    <link rel="stylesheet" href="../../../assets/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1>Liste des articles</h1>
-        
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success">
-                <?= $_SESSION['success'] ?>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger">
-                <?= $_SESSION['error'] ?>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
-        
-        <a href="create.php" class="btn btn-primary mb-3">Nouvel article</a>
-        
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>N°</th>
-                    <th>Titre</th>
-                    <th>Thématique</th>
-                    <th>Date création</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($articles as $art): ?>
-                    <tr>
-                        <td><?= $art['numArt'] ?></td>
-                        <td><?= htmlspecialchars($art['libTltArt']) ?></td>
-                        <td><?= htmlspecialchars($art['libThem'] ?? 'Aucune') ?></td>
-                        <td><?= date('d/m/Y', strtotime($art['dtCreaArt'])) ?></td>
-                        <td>
-                            <a href="edit.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-warning">Modifier</a>
-                            <a href="delete.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-danger">Supprimer</a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="bi bi-file-earmark-text me-2"></i>Gestion des articles</h1>
+    <div class="btn-group">
+        <a href="<?= ROOT_URL ?>/views/backend/articles/create.php" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nouvel article
+        </a>
     </div>
-</body>
-</html>
+</div>
 
-<?php
-require_once '../../functions/motcle.php';
-?>
+<!-- Articles Table -->
+<div class="admin-card">
+    <div class="card-header">
+        <h5><i class="bi bi-list-ul me-2"></i>Liste des articles (<?= count($articles) ?>)</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table admin-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">N°</th>
+                        <th>Titre</th>
+                        <th>Thématique</th>
+                        <th>Mots-clés</th>
+                        <th>Date création</th>
+                        <th class="text-end" style="width: 150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($articles)): ?>
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                Aucun article trouvé
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($articles as $art): ?>
+                            <?php $motscles = getMotsClesArticle($art['numArt']); ?>
+                            <tr>
+                                <td>
+                                    <span class="badge bg-secondary"><?= $art['numArt'] ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= htmlspecialchars($art['libTltArt']) ?></strong>
+                                </td>
+                                <td>
+                                    <?php if ($art['libThem']): ?>
+                                        <span class="badge bg-info"><?= htmlspecialchars($art['libThem']) ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php if (!empty($motscles)): ?>
+                                        <?php foreach ($motscles as $mc): ?>
+                                            <span class="badge bg-secondary"><?= htmlspecialchars($mc['libMotCle']) ?></span>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        <?= date('d/m/Y', strtotime($art['dtCreaArt'])) ?>
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group-actions">
+                                        <a href="edit.php?id=<?= $art['numArt'] ?>" 
+                                           class="btn btn-action btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="delete.php?id=<?= $art['numArt'] ?>" 
+                                           class="btn btn-action btn-outline-danger" 
+                                           title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet article ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-<!-- Dans le tableau, ajouter une colonne -->
-<thead>
-    <tr>
-        <th>N°</th>
-        <th>Titre</th>
-        <th>Thématique</th>
-        <th>Mots-clés</th>
-        <th>Date création</th>
-        <th>Actions</th>
-    </tr>
-</thead>
-<tbody>
-    <?php foreach ($articles as $art): ?>
-        <?php $motscles = getMotsClesArticle($art['numArt']); ?>
-        <tr>
-            <td><?= $art['numArt'] ?></td>
-            <td><?= htmlspecialchars($art['libTltArt']) ?></td>
-            <td><?= htmlspecialchars($art['libThem'] ?? 'Aucune') ?></td>
-            <td>
-                <?php foreach ($motscles as $mc): ?>
-                    <span class="badge bg-secondary"><?= htmlspecialchars($mc['libMotCle']) ?></span>
-                <?php endforeach; ?>
-            </td>
-            <td><?= date('d/m/Y', strtotime($art['dtCreaArt'])) ?></td>
-            <td>
-                <a href="edit.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-warning">Modifier</a>
-                <a href="delete.php?id=<?= $art['numArt'] ?>" class="btn btn-sm btn-danger">Supprimer</a>
-            </td>
+<?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>
         </tr>
     <?php endforeach; ?>
 </tbody>

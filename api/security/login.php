@@ -1,6 +1,9 @@
 <?php
 session_start();
+require_once '../../config.php';
 require_once '../../functions/query/select.php';
+
+global $DB;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../../views/frontend/security/login.php');
@@ -23,8 +26,7 @@ $sql = "SELECT m.*, s.libStat
         FROM MEMBRE m 
         INNER JOIN STATUT s ON m.numStat = s.numStat 
         WHERE m.pseudoMemb = ?";
-$pdo = getConnection();
-$stmt = $pdo->prepare($sql);
+$stmt = $DB->prepare($sql);
 $stmt->execute([$pseudoMemb]);
 $membre = $stmt->fetch();
 
@@ -61,10 +63,10 @@ if ($membre['numStat'] == 3) {
     header('Location: ../../views/backend/dashboard.php');
 } elseif ($membre['numStat'] == 2) {
     // Modérateur → Panneau de modération
-    header('Location: ../../views/backend/moderation.php');
+    header('Location: ../../views/backend/moderation/comments.php');
 } else {
     // Membre → Page d'accueil
-    header('Location: ../../views/frontend/index.php');
+    header('Location: ../../index.php');
 }
 exit;
 ?>

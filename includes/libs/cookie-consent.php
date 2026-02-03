@@ -9,7 +9,7 @@ if (!isset($_COOKIE['cookie_consent'])) {
                 <p class="mb-0">
                     Ce site utilise des cookies pour améliorer votre expérience. 
                     En continuant à naviguer, vous acceptez notre utilisation des cookies.
-                    <a href="/views/frontend/rgpd/rgpd.php" class="text-white">En savoir plus</a>
+                    <a href="/BLOGART26/views/frontend/rgpd/rgpd.php" class="text-white">En savoir plus</a>
                 </p>
             </div>
             <div class="col-md-4 text-end">
