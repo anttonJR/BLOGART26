@@ -29,7 +29,7 @@ function isModerator() {
 function requireLogin() {
     if (!isLoggedIn()) {
         $_SESSION['error'] = "Vous devez être connecté pour accéder à cette page";
-        header('Location: /views/frontend/security/login.php');
+        header('Location: /BLOGART26/views/frontend/security/login.php');
         exit;
     }
 }
@@ -41,7 +41,7 @@ function requireAdmin() {
     requireLogin();
     if (!isAdmin()) {
         $_SESSION['error'] = "Accès interdit";
-        header('Location: /views/frontend/index.php');
+        header('Location: /BLOGART26/index.php');
         exit;
     }
 }
@@ -53,7 +53,7 @@ function requireModerator() {
     requireLogin();
     if (!isModerator() && !isAdmin()) {
         $_SESSION['error'] = "Accès interdit";
-        header('Location: /views/frontend/index.php');
+        header('Location: /BLOGART26/index.php');
         exit;
     }
 }

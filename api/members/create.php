@@ -1,17 +1,58 @@
 <?php
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+set_exception_handler(function ($e) {
+    error_log('[signup] Exception: ' . $e->getMessage());
+    echo 'Erreur interne: ' . $e->getMessage();
+});
+
+set_error_handler(function ($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+    error_log("[signup] Error: $message in $file:$line");
+    echo "Erreur interne: $message";
+    return true;
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        error_log('[signup] Fatal: ' . $error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+        echo 'Erreur interne: ' . $error['message'];
+    }
+});
+
 session_start();
+require_once '../../config.php';
 require_once '../../functions/csrf.php';
+
+global $DB;
+if (!$DB) {
+    $_SESSION['error'] = "Connexion à la base de données impossible.";
+    header('Location: ../../views/frontend/security/signup.php');
+    exit;
+}
 
 $token = $_POST['csrf_token'] ?? '';
 if (!verifyCSRFToken($token)) {
-    die('Token CSRF invalide');
+    if (!headers_sent()) {
+        header('Location: /BLOGART26/views/frontend/security/signup.php');
+    }
+    echo "Token CSRF invalide. <a href='/BLOGART26/views/frontend/security/signup.php'>Retour au formulaire</a>";
+    exit;
 }
 
 require_once '../../functions/query/insert.php';
 require_once '../../functions/query/select.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../views/frontend/security/signup.php');
+    if (!headers_sent()) {
+        header('Location: /BLOGART26/views/frontend/security/signup.php');
+    }
+    echo "Accès invalide. <a href='/BLOGART26/views/frontend/security/signup.php'>Retour au formulaire</a>";
     exit;
 }
 
@@ -36,9 +77,9 @@ if (empty($pseudoMemb)) {
     $errors[] = "Le pseudo ne peut pas dépasser 70 caractères";
 } else {
     // Vérifier l'unicité du pseudo
+    global $DB;
     $sql = "SELECT COUNT(*) as count FROM MEMBRE WHERE pseudoMemb = ?";
-    $pdo = getConnection();
-    $stmt = $pdo->prepare($sql);
+    $stmt = $DB->prepare($sql);
     $stmt->execute([$pseudoMemb]);
     $result = $stmt->fetch();
     
@@ -63,10 +104,21 @@ if (empty($eMailMemb)) {
     $errors[] = "L'email n'est pas valide";
 } elseif ($eMailMemb !== $eMailMemb_confirm) {
     $errors[] = "Les deux emails ne correspondent pas";
+} else {
+    // Vérifier l'unicité de l'email
+    global $DB;
+    $sql = "SELECT COUNT(*) as count FROM MEMBRE WHERE eMailMemb = ?";
+    $stmt = $DB->prepare($sql);
+    $stmt->execute([$eMailMemb]);
+    $result = $stmt->fetch();
+    
+    if ($result['count'] > 0) {
+        $errors[] = "Cet email est déjà utilisé";
+    }
 }
 
 // === 5. VALIDATION PASSWORD ===
-$passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$/';
+$passwordRegex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,15}$/';
 
 if (empty($passMemb)) {
     $errors[] = "Le mot de passe est obligatoire";
@@ -86,7 +138,7 @@ if (isset($_POST['g-recaptcha-response'])) {
     $token = $_POST['g-recaptcha-response'];
     $url = 'https://www.google.com/recaptcha/api/siteverify';
     $data = [
-        'secret' => 'VOTRE_CLE_SECRETE',
+        'secret' => $_ENV['RECAPTCHA_SECRET_KEY'],
         'response' => $token
     ];
     
@@ -101,9 +153,15 @@ if (isset($_POST['g-recaptcha-response'])) {
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
     $response = json_decode($result);
-    
-    if (!$response->success || $response->score < 0.5) {
-        $errors[] = "Validation reCAPTCHA échouée. Êtes-vous un robot ?";
+
+    if (!$response || empty($response->success)) {
+        if (isset($response->{'error-codes'}) && in_array('timeout-or-duplicate', $response->{'error-codes'}, true)) {
+            $errors[] = "Token reCAPTCHA expiré. Rechargez la page et réessayez.";
+        } else {
+            $errors[] = "Validation reCAPTCHA échouée. Réessayez.";
+        }
+    } elseif (isset($response->score) && $response->score < 0.5) {
+        $errors[] = "Score reCAPTCHA trop bas (" . $response->score . "). Réessayez.";
     }
 } else {
     $errors[] = "Validation reCAPTCHA manquante";
@@ -113,7 +171,10 @@ if (isset($_POST['g-recaptcha-response'])) {
 if (!empty($errors)) {
     $_SESSION['errors'] = $errors;
     $_SESSION['old_data'] = $_POST;
-    header('Location: ../../views/frontend/security/signup.php');
+    if (!headers_sent()) {
+        header('Location: /BLOGART26/views/frontend/security/signup.php');
+    }
+    echo "Inscription invalide. <a href='/BLOGART26/views/frontend/security/signup.php'>Retour au formulaire</a>";
     exit;
 }
 
@@ -122,8 +183,9 @@ $passMemb_hashed = password_hash($passMemb, PASSWORD_DEFAULT);
 
 // === 10. GÉNÉRATION DU NUMÉRO DE MEMBRE ===
 // Récupérer le dernier numéro
+global $DB;
 $sql = "SELECT MAX(numMemb) as max FROM MEMBRE";
-$stmt = $pdo->query($sql);
+$stmt = $DB->query($sql);
 $result = $stmt->fetch();
 $numMemb = ($result['max'] ?? 0) + 1;
 
@@ -142,14 +204,35 @@ $data = [
 ];
 
 try {
-    $result = insert('MEMBRE', $data);
+    global $DB;
+    
+    // Préparer les colonnes et valeurs
+    $columns = implode(', ', array_keys($data));
+    $placeholders = ':' . implode(', :', array_keys($data));
+    
+    $sql = "INSERT INTO MEMBRE ($columns) VALUES ($placeholders)";
+    $stmt = $DB->prepare($sql);
+    
+    // Bind les valeurs
+    foreach ($data as $key => $value) {
+        $stmt->bindValue(":$key", $value);
+    }
+    
+    $result = $stmt->execute();
+    
     if ($result) {
         $_SESSION['success'] = "Inscription réussie ! Vous pouvez maintenant vous connecter.";
-        header('Location: ../../views/frontend/security/login.php');
+        if (!headers_sent()) {
+            header('Location: /BLOGART26/views/frontend/security/login.php');
+        }
+        echo "Inscription réussie. <a href='/BLOGART26/views/frontend/security/login.php'>Se connecter</a>";
     }
 } catch (Exception $e) {
     $_SESSION['error'] = "Erreur lors de l'inscription : " . $e->getMessage();
-    header('Location: ../../views/frontend/security/signup.php');
+    if (!headers_sent()) {
+        header('Location: /BLOGART26/views/frontend/security/signup.php');
+    }
+    echo "Erreur lors de l'inscription. <a href='/BLOGART26/views/frontend/security/signup.php'>Retour au formulaire</a>";
 }
 exit;
 ?>
