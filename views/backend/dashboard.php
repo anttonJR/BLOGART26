@@ -1,11 +1,7 @@
 <?php
-include '../../header.php';
-
-?>
-<?php
 session_start();
-require_once '../../functions/auth.php';
-require_once '../../functions/query/select.php';
+require_once '../../config.php';
+require_once ROOT . '/functions/auth.php';
 
 requireAdmin();
 
