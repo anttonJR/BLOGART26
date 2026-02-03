@@ -221,5 +221,30 @@ if (isLoggedIn()) {
 }
 ?>
 
+<!-- Ajouter après le titre de l'article -->
+<div class="d-flex align-items-center mb-3">
+    <?php if (isLoggedIn()): ?>
+        <form method="POST" action="../../api/likes/toggle.php" class="d-inline">
+            <?php csrfField(); ?>
+            <input type="hidden" name="numArt" value="<?= $numArt ?>">
+            <button type="submit" class="btn btn-<?= $userLiked ? 'danger' : 'outline-danger' ?> btn-lg">
+                <?= $userLiked ? '❤️' : '🤍' ?> 
+                <?= $userLiked ? 'J\'aime' : 'Aimer' ?>
+            </button>
+        </form>
+    <?php else: ?>
+        <button class="btn btn-outline-secondary btn-lg" disabled>
+            🤍 Aimer
+        </button>
+    <?php endif; ?>
+    
+    <span class="ms-3 fs-5">
+        <strong><?= $nbLikes ?></strong> like<?= $nbLikes > 1 ? 's' : '' ?>
+    </span>
+</div>
 
+<?php if (!isLoggedIn()): ?>
+    <div class="alert alert-info">
+        <a href="../security/login.php">Connectez-vous</a> pour liker cet article.
+    </div>
 <?php endif; ?>
