@@ -12,9 +12,10 @@ if (!isset($_GET['id'])) {
 
 $id = (int)$_GET['id'];
 
-$stmt = $DB->prepare("DELETE FROM THEMATIQUE WHERE numThem = ?");
+// Soft delete - mise à la corbeille
+$stmt = $DB->prepare("UPDATE THEMATIQUE SET delLogiq = 1, dtDelLogThem = NOW() WHERE numThem = ?");
 $stmt->execute([$id]);
 
-$_SESSION['success'] = "Thématique supprimée avec succès";
+$_SESSION['success'] = "Thématique mise à la corbeille";
 header('Location: ' . ROOT_URL . '/views/backend/thematiques/list.php');
 exit;

@@ -6,15 +6,26 @@ requireAdmin();
 
 global $DB;
 
-$stmt = $DB->query("SELECT * FROM THEMATIQUE ORDER BY numThem");
+// Exclure les thématiques dans la corbeille
+$stmt = $DB->query("SELECT * FROM THEMATIQUE WHERE delLogiq = 0 OR delLogiq IS NULL ORDER BY numThem");
 $thematiques = $stmt->fetchAll();
+
+// Compter les thématiques dans la corbeille
+$stmtTrash = $DB->query("SELECT COUNT(*) FROM THEMATIQUE WHERE delLogiq = 1");
+$trashCount = $stmtTrash->fetchColumn();
 ?>
 
 <div class="page-header">
     <h1><i class="bi bi-tags me-2"></i>Thématiques</h1>
-    <a href="<?= ROOT_URL ?>/views/backend/thematiques/create.php" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i>Nouvelle thématique
-    </a>
+    <div class="d-flex gap-2">
+        <a href="<?= ROOT_URL ?>/views/backend/thematiques/trash.php" class="btn btn-outline-secondary">
+            <i class="bi bi-trash me-1"></i>Corbeille
+            <?php if ($trashCount > 0): ?><span class="badge bg-danger"><?= $trashCount ?></span><?php endif; ?>
+        </a>
+        <a href="<?= ROOT_URL ?>/views/backend/thematiques/create.php" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>Nouvelle thématique
+        </a>
+    </div>
 </div>
 
 <?php if (isset($_SESSION['success'])): ?>

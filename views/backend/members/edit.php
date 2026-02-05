@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Modifier membre';
-require_once __DIR__ . '/../includes/header.php';
+// Logique AVANT l'inclusion du header (pour permettre les redirections)
+require_once __DIR__ . '/../../../config.php';
 require_once ROOT . '/functions/auth.php';
 requireAdmin();
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nomMemb = trim($_POST['nomMemb'] ?? '');
     $pseudoMemb = trim($_POST['pseudoMemb'] ?? '');
     $eMailMemb = trim($_POST['eMailMemb'] ?? '');
-    $wordsMemb = $_POST['wordsMemb'] ?? '';
+    $passMemb = $_POST['passMemb'] ?? '';
     $numStat = (int)($_POST['numStat'] ?? 3);
     
     if (empty($prenomMemb) || empty($nomMemb) || empty($pseudoMemb) || empty($eMailMemb)) {
@@ -43,9 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($check->fetch()) {
             $error = "Ce pseudo est déjà utilisé";
         } else {
-            if (!empty($wordsMemb)) {
-                $hashedPassword = password_hash($wordsMemb, PASSWORD_DEFAULT);
-                $stmt = $DB->prepare("UPDATE MEMBRE SET prenomMemb = ?, nomMemb = ?, pseudoMemb = ?, wordsMemb = ?, eMailMemb = ?, numStat = ? WHERE numMemb = ?");
+            if (!empty($passMemb)) {
+                $hashedPassword = password_hash($passMemb, PASSWORD_DEFAULT);
+                $stmt = $DB->prepare("UPDATE MEMBRE SET prenomMemb = ?, nomMemb = ?, pseudoMemb = ?, passMemb = ?, eMailMemb = ?, numStat = ? WHERE numMemb = ?");
                 $stmt->execute([$prenomMemb, $nomMemb, $pseudoMemb, $hashedPassword, $eMailMemb, $numStat, $id]);
             } else {
                 $stmt = $DB->prepare("UPDATE MEMBRE SET prenomMemb = ?, nomMemb = ?, pseudoMemb = ?, eMailMemb = ?, numStat = ? WHERE numMemb = ?");
@@ -57,6 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Inclusion du header APRÈS la logique de redirection
+$pageTitle = 'Modifier membre';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
@@ -99,8 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="wordsMemb" class="form-label">Nouveau mot de passe</label>
-                    <input type="password" class="form-control" id="wordsMemb" name="wordsMemb" placeholder="Laisser vide pour ne pas changer">
+                    <label for="passMemb" class="form-label">Nouveau mot de passe</label>
+                    <input type="password" class="form-control" id="passMemb" name="passMemb" placeholder="Laisser vide pour ne pas changer">
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="numStat" class="form-label">Statut *</label>

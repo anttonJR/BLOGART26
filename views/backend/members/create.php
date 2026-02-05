@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Nouveau membre';
-require_once __DIR__ . '/../includes/header.php';
+// Logique AVANT l'inclusion du header (pour permettre les redirections)
+require_once __DIR__ . '/../../../config.php';
 require_once ROOT . '/functions/auth.php';
 requireAdmin();
 
@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nomMemb = trim($_POST['nomMemb'] ?? '');
     $pseudoMemb = trim($_POST['pseudoMemb'] ?? '');
     $eMailMemb = trim($_POST['eMailMemb'] ?? '');
-    $wordsMemb = $_POST['wordsMemb'] ?? '';
+    $passMemb = $_POST['passMemb'] ?? '';
     $numStat = (int)($_POST['numStat'] ?? 3);
     
-    if (empty($prenomMemb) || empty($nomMemb) || empty($pseudoMemb) || empty($eMailMemb) || empty($wordsMemb)) {
+    if (empty($prenomMemb) || empty($nomMemb) || empty($pseudoMemb) || empty($eMailMemb) || empty($passMemb)) {
         $error = "Tous les champs sont requis";
     } else {
         // Vérifier si le pseudo existe
@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($check->fetch()) {
             $error = "Ce pseudo est déjà utilisé";
         } else {
-            $hashedPassword = password_hash($wordsMemb, PASSWORD_DEFAULT);
-            $stmt = $DB->prepare("INSERT INTO MEMBRE (prenomMemb, nomMemb, pseudoMemb, wordsMemb, eMailMemb, numStat) VALUES (?, ?, ?, ?, ?, ?)");
+            $hashedPassword = password_hash($passMemb, PASSWORD_DEFAULT);
+            $stmt = $DB->prepare("INSERT INTO MEMBRE (prenomMemb, nomMemb, pseudoMemb, passMemb, eMailMemb, numStat) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([$prenomMemb, $nomMemb, $pseudoMemb, $hashedPassword, $eMailMemb, $numStat]);
             $_SESSION['success'] = "Membre créé avec succès";
             header('Location: ' . ROOT_URL . '/views/backend/members/list.php');
@@ -37,6 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Inclusion du header APRÈS la logique de redirection
+$pageTitle = 'Nouveau membre';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
@@ -79,8 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="wordsMemb" class="form-label">Mot de passe *</label>
-                    <input type="password" class="form-control" id="wordsMemb" name="wordsMemb" required>
+                    <label for="passMemb" class="form-label">Mot de passe *</label>
+                    <input type="password" class="form-control" id="passMemb" name="passMemb" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="numStat" class="form-label">Statut *</label>

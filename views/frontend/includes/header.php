@@ -35,7 +35,7 @@ require_once ROOT . '/functions/auth.php';
     <nav class="navbar navbar-expand-lg navbar-dark bg-bordeaux">
         <div class="container">
             <a class="navbar-brand fs-3" href="<?= ROOT_URL ?>/index.php">
-                <i class="bi bi-brush me-2"></i>BlogArt
+                <img src="<?= ROOT_URL ?>/yanis09.png" alt="Millésime" style="height: 45px;">
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -55,6 +55,12 @@ require_once ROOT . '/functions/auth.php';
                     </li>
                     
                     <?php if (isLoggedIn()): ?>
+                        <li class="nav-item">
+                            <span class="nav-link text-success d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill me-1"></i>
+                                <small>Connecté</small>
+                            </span>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($_SESSION['user']['pseudoMemb'] ?? 'Utilisateur') ?>

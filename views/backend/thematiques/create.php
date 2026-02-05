@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Nouvelle thématique';
-require_once __DIR__ . '/../includes/header.php';
+// Logique AVANT l'inclusion du header (pour permettre les redirections)
+require_once __DIR__ . '/../../../config.php';
 require_once ROOT . '/functions/auth.php';
 requireAdmin();
 
@@ -20,6 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+// Inclusion du header APRÈS la logique de redirection
+$pageTitle = 'Nouvelle thématique';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">

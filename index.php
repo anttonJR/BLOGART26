@@ -3,6 +3,22 @@ require_once 'config.php';
 require_once ROOT . '/functions/csrf.php';
 require_once ROOT . '/functions/auth.php';
 
+// Traitement de l'inscription newsletter
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['newsletter'])) {
+    if (verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $email = filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL);
+        if ($email) {
+            $_SESSION['newsletter_success'] = "Merci ! Vous êtes inscrit à notre newsletter.";
+        } else {
+            $_SESSION['newsletter_error'] = "Veuillez entrer une adresse email valide.";
+        }
+    } else {
+        $_SESSION['newsletter_error'] = "Erreur de sécurité. Veuillez réessayer.";
+    }
+    header('Location: ' . ROOT_URL . '/index.php#newsletter');
+    exit;
+}
+
 // Récupérer tous les articles avec leur nombre de likes et informations thématiques
 $articles = sql_select(
     'ARTICLE a LEFT JOIN THEMATIQUE t ON a.numThem = t.numThem',
@@ -68,6 +84,11 @@ $keywords = sql_select(
             color: var(--black);
             background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><text x="10" y="50" font-size="60" fill="%23000">🍇</text></svg>');
             overflow-x: hidden;
+        }
+
+        /* Centrer les éléments quand il y a de l'espace vide */
+        .row-centered {
+            justify-content: center !important;
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -581,8 +602,7 @@ $keywords = sql_select(
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="index.php">
-                <span style="border: 2px solid var(--black); padding: 5px 15px; margin-right: 10px;">BA</span>
-                Millésime
+                <img src="/BLOGART26/yanis09.png" alt="Logo" style="height: 50px;">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -591,8 +611,32 @@ $keywords = sql_select(
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="#articles">Articles</a></li>
                     <li class="nav-item"><a class="nav-link" href="#thematiques">Thématiques</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/BLOGART26/views/backend/dashboard.php"><i class="bi bi-pencil-square"></i> Admin</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/BLOGART26/views/frontend/security/login.php"><i class="bi bi-person-circle"></i> Connexion</a></li>
+                    
+                    <?php if (isLoggedIn()): ?>
+                        <li class="nav-item">
+                            <span class="nav-link" style="color: #28a745 !important;">
+                                <i class="bi bi-check-circle-fill me-1"></i>Connecté
+                            </span>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle me-1"></i><?= htmlspecialchars($_SESSION['user']['pseudoMemb'] ?? 'Utilisateur') ?>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <?php if (isAdmin()): ?>
+                                    <li><a class="dropdown-item" href="/BLOGART26/views/backend/dashboard.php"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php elseif (isModerator()): ?>
+                                    <li><a class="dropdown-item" href="/BLOGART26/views/backend/moderation/comments.php"><i class="bi bi-shield-check me-2"></i>Modération</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php endif; ?>
+                                <li><a class="dropdown-item text-danger" href="/BLOGART26/api/security/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Déconnexion</a></li>
+                            </ul>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item"><a class="nav-link" href="/BLOGART26/views/frontend/security/login.php"><i class="bi bi-person-circle"></i> Connexion</a></li>
+                        <li class="nav-item"><a class="nav-link btn btn-outline-dark btn-sm ms-2" href="/BLOGART26/views/frontend/security/signup.php">Inscription</a></li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
@@ -607,9 +651,12 @@ $keywords = sql_select(
                 L'art de partager notre passion viticole
             </p>
             <div class="mt-4">
-                <span class="badge-status badge-admin">Administrateur</span>
-                <span class="badge-status badge-moderator">Modérateur</span>
-                <span class="badge-status badge-member">Membre</span>
+                <a href="#articles" class="btn btn-primary me-2">
+                    <i class="bi bi-book me-1"></i>Découvrir nos articles
+                </a>
+                <a href="#thematiques" class="btn btn-outline">
+                    <i class="bi bi-tags me-1"></i>Explorer les thématiques
+                </a>
             </div>
         </div>
     </section>
@@ -691,7 +738,7 @@ $keywords = sql_select(
                 </div>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4 row-centered">
                 <?php if (empty($articles)): ?>
                     <div class="col-12">
                         <div class="alert alert-info">
@@ -768,7 +815,7 @@ $keywords = sql_select(
     <section id="thematiques" class="py-5" style="background-color: var(--beige-medium);">
         <div class="container">
             <h2 class="text-center mb-5" style="font-size: 2.5rem; color: var(--bordeaux);">Explorez par thématique</h2>
-            <div class="row g-4">
+            <div class="row g-4 row-centered">
                 <?php 
                 $icons = ['bi-sun', 'bi-droplet', 'bi-cup', 'bi-book', 'bi-newspaper', 'bi-calendar-event'];
                 $iconIndex = 0;
@@ -816,7 +863,7 @@ $keywords = sql_select(
         </div>
     </section>
 
-    <!-- Newsletter Section -->
+    <!-- Newsletter Sectionnnnnnn -->
     <section class="py-5" style="background-color: var(--beige-medium);">
         <div class="container">
             <div class="row align-items-center">
@@ -825,11 +872,23 @@ $keywords = sql_select(
                     <p class="lead">Inscrivez-vous à notre newsletter pour recevoir nos derniers articles et actualités du domaine.</p>
                 </div>
                 <div class="col-md-6">
-                    <form action="api/contact/send.php" method="POST">
+                    <form action="" method="POST" id="newsletterForm">
+                        <?php csrfField(); ?>
+                        <input type="hidden" name="newsletter" value="1">
                         <div class="input-group input-group-lg">
                             <input type="email" name="email" class="form-control" placeholder="Votre adresse email" style="border-radius: 0;" required>
                             <button class="btn btn-primary" type="submit">S'inscrire</button>
                         </div>
+                        <?php if (isset($_SESSION['newsletter_success'])): ?>
+                            <div class="alert alert-success mt-3 mb-0">
+                                <i class="bi bi-check-circle me-2"></i><?= $_SESSION['newsletter_success']; unset($_SESSION['newsletter_success']); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['newsletter_error'])): ?>
+                            <div class="alert alert-danger mt-3 mb-0">
+                                <i class="bi bi-exclamation-circle me-2"></i><?= $_SESSION['newsletter_error']; unset($_SESSION['newsletter_error']); ?>
+                            </div>
+                        <?php endif; ?>
                     </form>
                 </div>
             </div>

@@ -25,7 +25,7 @@ $pendingCount = $stmtPending->fetch()['pending'] ?? 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?? 'Administration' ?> - BlogArt Admin</title>
+    <title><?= $pageTitle ?? 'Administration' ?> - Millésime Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="<?= ROOT_URL ?>/src/css/admin.css" rel="stylesheet">
@@ -35,8 +35,8 @@ $pendingCount = $stmtPending->fetch()['pending'] ?? 0;
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="<?= ROOT_URL ?>/views/backend/dashboard.php" class="sidebar-brand">
-                <i class="bi bi-brush"></i>
-                <span>BlogArt</span>
+                <span style="font-size: 1.5rem;">🍷</span>
+                <span>Millésime</span>
             </a>
         </div>
         
@@ -105,18 +105,10 @@ $pendingCount = $stmtPending->fetch()['pending'] ?? 0;
             
             <div class="navbar-actions ms-auto">
                 <?php if ($pendingCount > 0): ?>
-                <div class="dropdown me-3">
-                    <button class="btn btn-link position-relative" data-bs-toggle="dropdown">
-                        <i class="bi bi-bell fs-5"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><?= $pendingCount ?></span>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-end">
-                        <h6 class="dropdown-header">Notifications</h6>
-                        <a class="dropdown-item" href="<?= ROOT_URL ?>/views/backend/moderation/comments.php">
-                            <i class="bi bi-chat-dots text-warning me-2"></i><?= $pendingCount ?> commentaire(s) en attente
-                        </a>
-                    </div>
-                </div>
+                <a href="<?= ROOT_URL ?>/views/backend/moderation/comments.php" class="btn btn-link position-relative me-3" title="Commentaires en attente">
+                    <i class="bi bi-bell fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"><?= $pendingCount ?></span>
+                </a>
                 <?php endif; ?>
                 
                 <div class="dropdown">

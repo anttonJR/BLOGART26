@@ -1,9 +1,6 @@
 <?php
 session_start();
-<<<<<<< HEAD
-=======
 require_once '../../config.php';
->>>>>>> 3607ba0048879bf47467f9aaedd5d73e5563c647
 require_once '../../functions/query/insert.php';
 require_once '../../functions/query/select.php';
 
@@ -36,8 +33,7 @@ if (empty($pseudoMemb)) {
 } else {
     // Vérifier l'unicité du pseudo
     $sql = "SELECT COUNT(*) as count FROM MEMBRE WHERE pseudoMemb = ?";
-    $pdo = getConnection();
-    $stmt = $pdo->prepare($sql);
+    $stmt = $DB->prepare($sql);
     $stmt->execute([$pseudoMemb]);
     $result = $stmt->fetch();
     
@@ -80,31 +76,6 @@ if ($accordMemb != 1) {
     $errors[] = "Vous devez accepter le stockage de vos données pour vous inscrire";
 }
 
-<<<<<<< HEAD
-// === 7. VALIDATION reCAPTCHA ===
-if (isset($_POST['g-recaptcha-response'])) {
-    $token = $_POST['g-recaptcha-response'];
-    $url = 'https://www.google.com/recaptcha/api/siteverify';
-    $data = [
-        'secret' => 'VOTRE_CLE_SECRETE',
-        'response' => $token
-    ];
-    
-    $options = [
-        'http' => [
-            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-            'method' => 'POST',
-            'content' => http_build_query($data)
-        ]
-    ];
-    
-    $context = stream_context_create($options);
-    $result = file_get_contents($url, false, $context);
-    $response = json_decode($result);
-    
-    if (!$response->success || $response->score < 0.5) {
-        $errors[] = "Validation reCAPTCHA échouée. Êtes-vous un robot ?";
-=======
 // === 7. VALIDATION reCAPTCHA (optionnel si clés non configurées) ===
 $recaptchaSecret = getenv('RECAPTCHA_SECRET_KEY');
 if ($recaptchaSecret && $recaptchaSecret !== 'your_secret_key_here') {
@@ -133,11 +104,12 @@ if ($recaptchaSecret && $recaptchaSecret !== 'your_secret_key_here') {
         }
     } else {
         $errors[] = "Validation reCAPTCHA manquante";
->>>>>>> 3607ba0048879bf47467f9aaedd5d73e5563c647
     }
 }
 
-// === 8. SI ERREURS, RETOUR AU FORMULAIRE ===
+// === 8. SI ERREURSsss, RETOUR AU FORMULAIRE ===
+// === 8. SI ERREURSsss, RETOUR AU FORMULAIRE ===
+// === 8. SI ERREURSsss, RETOUR AU FORMULAIRE ===
 if (!empty($errors)) {
     $_SESSION['errors'] = $errors;
     $_SESSION['old_data'] = $_POST;
@@ -149,34 +121,12 @@ if (!empty($errors)) {
 $passMemb_hashed = password_hash($passMemb, PASSWORD_DEFAULT);
 
 // === 10. GÉNÉRATION DU NUMÉRO DE MEMBRE ===
-// Récupérer le dernier numéro
 $sql = "SELECT MAX(numMemb) as max FROM MEMBRE";
-$stmt = $pdo->query($sql);
+$stmt = $DB->query($sql);
 $result = $stmt->fetch();
 $numMemb = ($result['max'] ?? 0) + 1;
 
 // === 11. INSERTION EN BASE ===
-<<<<<<< HEAD
-$data = [
-    'numMemb' => $numMemb,
-    'prenomMemb' => $prenomMemb,
-    'nomMemb' => $nomMemb,
-    'pseudoMemb' => $pseudoMemb,
-    'eMailMemb' => $eMailMemb,
-    'passMemb' => $passMemb_hashed,
-    'dtCreaMemb' => date('Y-m-d H:i:s'),
-    'dtMajMemb' => null,
-    'accordMemb' => 1,
-    'numStat' => 1  // Statut "membre" par défaut
-];
-
-try {
-    $result = insert('MEMBRE', $data);
-    if ($result) {
-        $_SESSION['success'] = "Inscription réussie ! Vous pouvez maintenant vous connecter.";
-        header('Location: ../../views/frontend/security/login.php');
-    }
-=======
 try {
     $sql = "INSERT INTO MEMBRE (numMemb, prenomMemb, nomMemb, pseudoMemb, eMailMemb, passMemb, dtCreaMemb, accordMemb, numStat) 
             VALUES (:numMemb, :prenomMemb, :nomMemb, :pseudoMemb, :eMailMemb, :passMemb, :dtCreaMemb, :accordMemb, :numStat)";
@@ -193,16 +143,11 @@ try {
         ':numStat' => 3
     ]);
     
-    $_SESSION['success'] = "Inscription réussie ! Vous pouvez maintenant vous connecter.";
+    $_SESSION['success'] = "Votre compte a été créé avec succès ! Bienvenue " . htmlspecialchars($prenomMemb) . " 🎉 Vous pouvez maintenant vous connecter.";
     header('Location: ../../views/frontend/security/login.php');
->>>>>>> 3607ba0048879bf47467f9aaedd5d73e5563c647
 } catch (Exception $e) {
     $_SESSION['error'] = "Erreur lors de l'inscription : " . $e->getMessage();
     header('Location: ../../views/frontend/security/signup.php');
 }
 exit;
-<<<<<<< HEAD
 ?>
-=======
-?>
->>>>>>> 3607ba0048879bf47467f9aaedd5d73e5563c647

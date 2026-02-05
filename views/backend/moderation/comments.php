@@ -1,6 +1,6 @@
 <?php
-$pageTitle = 'Modération';
-require_once __DIR__ . '/../includes/header.php';
+// Logique AVANT l'inclusion du header (pour permettre les redirections)
+require_once __DIR__ . '/../../../config.php';
 require_once ROOT . '/functions/auth.php';
 requireModerator();
 
@@ -33,6 +33,10 @@ $stmt = $DB->query("
     ORDER BY c.dtCreaCom DESC
 ");
 $pendingComments = $stmt->fetchAll();
+
+// Inclusion du header APRÈS la logique de redirection
+$pageTitle = 'Modération';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">

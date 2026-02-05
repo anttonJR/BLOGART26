@@ -142,6 +142,11 @@ if ($keyword) $pageTitle = 'Mot-clé : ' . htmlspecialchars($keyword);
             padding: 8px 15px;
             font-size: 0.9rem;
         }
+
+        /* Centrer les éléments quand il y a de l'espace vide */
+        .row-centered {
+            justify-content: center !important;
+        }
     </style>
 </head>
 <body>
@@ -185,7 +190,7 @@ if ($keyword) $pageTitle = 'Mot-clé : ' . htmlspecialchars($keyword);
                 <i class="bi bi-arrow-left"></i> Retour à l'accueil
             </a>
         <?php else: ?>
-            <div class="row g-4">
+            <div class="row g-4 row-centered">
                 <?php foreach ($articles as $article): ?>
                     <div class="col-lg-4 col-md-6">
                         <div class="card h-100">
