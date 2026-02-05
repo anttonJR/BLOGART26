@@ -7,6 +7,9 @@ require_once ROOT . '/functions/auth.php';
 require_once ROOT . '/functions/bbcode.php';
 require_once ROOT . '/functions/motcle.php';
 
+$pageTitle = 'Article - Millésime Blog\'Art';
+include '../includes/header.php';
+
 $numArt = $_GET['id'] ?? null;
 if (!$numArt) {
     header('Location: ' . ROOT_URL . '/index.php');
@@ -55,58 +58,9 @@ $stmtCom = $DB->prepare($sqlCom);
 $stmtCom->execute([$numArt]);
 $commentaires = $stmtCom->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($art['libTitrArt'] ?? '') ?> - BlogArt</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root {
-            --beige-light: #f4f1ea;
-            --beige: #e8e0d0;
-            --bordeaux: #800000;
-            --bordeaux-dark: #5c0000;
-            --gold: #8f7f5e;
-            --black: #12120c;
-        }
-        body { background-color: var(--beige-light); font-family: 'Montserrat', sans-serif; }
-        .bg-bordeaux { background-color: var(--bordeaux) !important; }
-        .text-bordeaux { color: var(--bordeaux) !important; }
-        .btn-bordeaux { background-color: var(--bordeaux); color: white; border: none; }
-        .btn-bordeaux:hover { background-color: var(--bordeaux-dark); color: white; }
-    </style>
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-bordeaux">
-        <div class="container">
-            <a class="navbar-brand fs-3" href="<?= ROOT_URL ?>/index.php">
-                <i class="bi bi-brush me-2"></i>BlogArt
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="<?= ROOT_URL ?>/index.php">Accueil</a></li>
-                    <li class="nav-item"><a class="nav-link" href="recherche.php">Articles</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<?= ROOT_URL ?>/views/frontend/contact.php">Contact</a></li>
-                    <?php if (isLoggedIn()): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= ROOT_URL ?>/api/security/logout.php">Déconnexion</a>
-                        </li>
-                    <?php else: ?>
-                        <li class="nav-item"><a class="nav-link" href="../security/login.php">Connexion</a></li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container mt-5">
+<!-- Contenu article -->
+<div class="container mt-5">
         <!-- Bouton retour -->
         <a href="recherche.php" class="btn btn-outline-secondary mb-4">
             <i class="bi bi-arrow-left"></i> Retour aux articles
@@ -280,13 +234,6 @@ $commentaires = $stmtCom->fetchAll();
         <?php endif; ?>
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-5 py-4" style="background-color: #12120c; color: #f4f1ea;">
-        <div class="container text-center">
-            <p class="mb-0">© <?= date('Y') ?> Blog'Art - Tous droits réservés</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php
+include '../includes/footer.php';
+?>

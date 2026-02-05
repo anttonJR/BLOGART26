@@ -583,12 +583,13 @@ include '../includes/cookie-consent.php';
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // reCAPTCHA v3 - Le script est à la fin, pas besoin d'attendre DOMContentLoaded
+        // reCAPTCHA v3
         const form = document.querySelector('form');
         
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('🔐 Vérification reCAPTCHA v3...');
                 
                 if (typeof grecaptcha === 'undefined') {
                     console.error('❌ grecaptcha non chargé');
@@ -597,6 +598,7 @@ include '../includes/cookie-consent.php';
                 
                 grecaptcha.ready(function() {
                     grecaptcha.execute('<?= getenv('RECAPTCHA_SITE_KEY') ?>', {action: 'signup'}).then(function(token) {
+                        console.log('✅ Token reCAPTCHA reçu et validé');
                         document.getElementById('g-recaptcha-response').value = token;
                         form.submit();
                     });
